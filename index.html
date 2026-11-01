@@ -6,6 +6,13 @@
 <meta name="theme-color" content="#15122c">
 <meta name="description" content="Block blast 1 contra 1: cada 100 puntos le quitas una línea al campo de tu rival.">
 <title>Duelo de Bloques</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Duelo">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Nunito:wght@500;700;800&display=swap">
 <style>
@@ -130,6 +137,14 @@ button:focus-visible{outline:3px solid var(--text);outline-offset:2px}
 .final small{display:block;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 .final b{font-family:var(--f-display);font-weight:400;font-size:24px;font-variant-numeric:tabular-nums}
 
+.installbtn{background:var(--rival);color:var(--bg);padding:8px 14px;font-size:13px;display:inline-flex;align-items:center;gap:6px}
+.installbtn svg{width:15px;height:15px}
+.installbtn:hover{filter:brightness(1.08)}
+.sheet{position:fixed;inset:0;z-index:100;background:rgba(10,8,24,.7);backdrop-filter:blur(3px);display:flex;align-items:flex-end;justify-content:center;padding:16px}
+.sheet .card{margin-bottom:max(8px, env(safe-area-inset-bottom,0px))}
+.sheet ol{margin:0;padding-left:20px;line-height:1.6;display:flex;flex-direction:column;gap:6px}
+.sheet .closebtn{background:var(--you);padding:12px;font-size:15px}
+
 @media (max-width:720px){
   .arena{grid-template-columns:1fr;gap:12px}
   .rival-panel{order:-1;display:grid;grid-template-columns:120px minmax(0,1fr);gap:8px 14px;padding:12px}
@@ -148,6 +163,10 @@ button:focus-visible{outline:3px solid var(--text);outline-offset:2px}
 <header>
   <h1><span class="vs">Duelo</span> de <span class="vs2">Bloques</span></h1>
   <div class="hbtns">
+    <button class="installbtn" id="installBtn" type="button" hidden>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>
+      Instalar
+    </button>
     <span class="chip" id="diffChip">Normal</span>
     <button class="ghostbtn" id="restartBtn" type="button">Reiniciar</button>
   </div>
@@ -713,6 +732,58 @@ window.addEventListener("pagehide", leaveRoom);
 // Estado inicial visible detrás del menú
 syncSettings();
 resetBoard(P); resetBoard(R);
+</script>
+
+<div class="sheet" id="iosSheet" hidden>
+  <div class="card" role="dialog" aria-modal="true" aria-labelledby="iosTitle">
+    <h2 id="iosTitle">Instalar en iPhone</h2>
+    <ol>
+      <li>Abre esta página en <b>Safari</b>.</li>
+      <li>Pulsa el botón <b>Compartir</b> (el cuadrado con la flecha hacia arriba).</li>
+      <li>Elige <b>Añadir a pantalla de inicio</b> y pulsa <b>Añadir</b>.</li>
+    </ol>
+    <p>Se abrirá a pantalla completa, con su propio icono, como cualquier app.</p>
+    <button class="closebtn" type="button" id="iosClose">Entendido</button>
+  </div>
+</div>
+
+<script>
+// Instalación como app (PWA)
+(() => {
+  const btn = document.getElementById('installBtn');
+  const sheet = document.getElementById('iosSheet');
+  const installed = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  let deferred = null;
+
+  if ('serviceWorker' in navigator) {
+    addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+  }
+  if (installed()) return;
+
+  // Android / Chrome / Edge: el navegador avisa de que se puede instalar y guardamos ese aviso.
+  addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    deferred = e;
+    btn.hidden = false;
+  });
+  // iPhone: no hay instalación automática, así que el botón explica los pasos.
+  if (isIOS) btn.hidden = false;
+
+  btn.addEventListener('click', async () => {
+    if (deferred) {
+      deferred.prompt();
+      const { outcome } = await deferred.userChoice;
+      deferred = null;
+      if (outcome === 'accepted') btn.hidden = true;
+    } else if (isIOS) {
+      sheet.hidden = false;
+    }
+  });
+  document.getElementById('iosClose').addEventListener('click', () => { sheet.hidden = true; });
+  sheet.addEventListener('click', e => { if (e.target === sheet) sheet.hidden = true; });
+  addEventListener('appinstalled', () => { btn.hidden = true; deferred = null; });
+})();
 </script>
 </body>
 </html>
