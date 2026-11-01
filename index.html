@@ -30,7 +30,7 @@
 img{max-width:100%}
 html,body{height:100%}
 body{margin:0;font-size:14px;background:var(--bg);color:var(--text);font-family:var(--f-body);
-  padding-left:max(16px, env(safe-area-inset-left,0px));padding-right:max(16px, env(safe-area-inset-right,0px));padding-block:16px 24px;
+  padding-left:max(16px, env(safe-area-inset-left,0px));padding-right:max(16px, env(safe-area-inset-right,0px));padding-top:max(16px, env(safe-area-inset-top,0px));padding-bottom:max(24px, calc(env(safe-area-inset-bottom,0px) + 8px));
   -webkit-user-select:none;user-select:none;overflow-x:hidden}
 header{max-width:900px;margin:0 auto 16px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
 h1{font-family:var(--f-display);font-weight:400;font-size:clamp(22px,4.5vw,32px);margin:0;letter-spacing:.02em;line-height:1;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
@@ -42,6 +42,9 @@ button{font-family:var(--f-body);font-weight:800;cursor:pointer;border:0;border-
 button:focus-visible{outline:3px solid var(--text);outline-offset:2px}
 .ghostbtn{background:transparent;color:var(--text);border:1px solid var(--line);padding:7px 14px;font-size:13px}
 .ghostbtn:hover{border-color:var(--muted)}
+.iconbtn{padding:6px 10px;display:inline-grid;place-items:center}
+.iconbtn svg{width:18px;height:18px}
+.chip{margin-left:auto}
 
 .arena{position:relative;max-width:900px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,270px);gap:24px;align-items:start}
 .panel{background:var(--panel);border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:14px;min-width:0}
@@ -126,8 +129,8 @@ button:focus-visible{outline:3px solid var(--text);outline-offset:2px}
 .ghost{position:fixed;left:0;top:0;z-index:50;pointer-events:none;gap:var(--gap);filter:drop-shadow(0 8px 12px rgba(0,0,0,.45))}
 .ghost .pc{border-radius:5px}
 
-.overlay{position:absolute;inset:-8px;background:rgba(21,18,44,.88);backdrop-filter:blur(4px);border-radius:24px;display:flex;align-items:flex-start;justify-content:center;padding:32px 16px;z-index:20}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:24px;max-width:430px;width:100%;display:flex;flex-direction:column;gap:16px}
+.overlay{position:fixed;inset:0;background:rgba(21,18,44,.9);backdrop-filter:blur(4px);display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;z-index:20;padding-top:max(24px, calc(env(safe-area-inset-top,0px) + 12px));padding-bottom:max(24px, calc(env(safe-area-inset-bottom,0px) + 12px));padding-left:max(16px, env(safe-area-inset-left,0px));padding-right:max(16px, env(safe-area-inset-right,0px))}
+.card{position:relative;z-index:2;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:24px;max-width:430px;width:100%;display:flex;flex-direction:column;gap:16px}
 .card h2{font-family:var(--f-display);font-weight:400;margin:0;font-size:26px;line-height:1.1;text-wrap:balance}
 .card p{margin:0;color:var(--muted);line-height:1.5}
 .rules{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px;line-height:1.45}
@@ -159,7 +162,8 @@ button:focus-visible{outline:3px solid var(--text);outline-offset:2px}
 @keyframes count{from{transform:translate(-50%,-50%) scale(1.9);opacity:0}30%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
 
 /* Pantalla de resultado */
-.overlay{overflow:hidden}
+.confetti-layer{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:1}
+.card{flex-shrink:0}
 .overlay[data-look="win"]{background:rgba(38,30,10,.88)}
 .overlay[data-look="lose"]{background:rgba(40,8,20,.9)}
 .result{position:relative;z-index:2;text-align:center;align-items:center;gap:14px}
@@ -190,7 +194,7 @@ button:focus-visible{outline:3px solid var(--text);outline-offset:2px}
 .pips i{width:12px;height:12px;border-radius:3px;background:var(--empty)}
 .series .you .pips i.on{background:var(--you)} .series .foe .pips i.on{background:var(--rival)}
 .confetti{position:absolute;top:-16px;width:8px;height:14px;border-radius:2px;background:var(--c);pointer-events:none;z-index:1;animation:fall var(--t) linear var(--d) forwards}
-@keyframes fall{to{transform:translate(var(--x),1100px) rotate(var(--r))}}
+@keyframes fall{to{transform:translate(var(--x),110vh) rotate(var(--r))}}
 
 .final{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .final div{background:var(--board);border-radius:12px;padding:12px}
@@ -225,8 +229,23 @@ button:focus-visible{outline:3px solid var(--text);outline-offset:2px}
   .rival-panel .tray{display:none}
   .rival-panel .score{font-size:22px}
   .you-panel{padding:12px}
-  .slot{height:100px;--mc:17px}
+  .slot{height:88px;--mc:16px}
+  .you-panel{gap:10px}
   :root{--gap:3px}
+  header{gap:8px;margin-bottom:10px}
+  h1{font-size:20px}
+  .chip{order:3;flex-basis:100%;margin-left:0;text-align:center;padding:4px 10px;font-size:11px}
+  .ghostbtn{padding:6px 12px}
+  .iconbtn{padding:5px 9px}
+  /* El tablero se encoge para que todo quepa sin desplazarse (app instalada y navegador) */
+  .you-panel .boardwrap{max-width:max(220px, calc(100vh - 450px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)));
+    max-width:max(220px, calc(100dvh - 450px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)))}
+}
+@media (max-width:720px) and (max-height:700px){
+  .rival-panel{grid-template-columns:96px minmax(0,1fr)}
+  .slot{height:76px;--mc:14px}
+  .you-panel .boardwrap{max-width:max(220px, calc(100vh - 445px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)));
+    max-width:max(220px, calc(100dvh - 445px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)))}
 }
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition:none!important}}
 </style>
@@ -235,13 +254,13 @@ button:focus-visible{outline:3px solid var(--text);outline-offset:2px}
 <body>
 <header>
   <h1><span><span class="vs">Duelo</span> de <span class="vs2">Bloques</span></span></h1>
+  <span class="chip" id="diffChip">Normal</span>
   <div class="hbtns">
     <button class="installbtn" id="installBtn" type="button" hidden>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>
       Instalar
     </button>
-    <button class="ghostbtn" id="soundBtn" type="button" aria-pressed="true">Sonido: sí</button>
-    <span class="chip" id="diffChip">Normal</span>
+    <button class="ghostbtn iconbtn" id="soundBtn" type="button" aria-pressed="true" aria-label="Sonido"></button>
     <button class="ghostbtn" id="restartBtn" type="button">Reiniciar</button>
   </div>
 </header>
@@ -269,6 +288,7 @@ button:focus-visible{outline:3px solid var(--text);outline-offset:2px}
 
   <div class="count" id="count" hidden></div>
   <div class="overlay" id="overlay">
+    <div class="confetti-layer" id="confettiLayer"></div>
     <div class="card" id="startCard">
       <h2>Block blast, pero a muerte</h2>
       <ul class="rules">
@@ -834,7 +854,7 @@ function readyText(){
 function confetti(){
   clearConfetti();
   if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  const ov = $("overlay"), cols = [...COLORS, "#ffffff"];
+  const ov = $("confettiLayer"), cols = [...COLORS, "#ffffff"];
   for (let i = 0; i < 48; i++){
     const d = document.createElement("div"); d.className = "confetti";
     d.style.left = Math.random() * 100 + "%";
@@ -868,7 +888,8 @@ function syncSettings(){
   document.querySelectorAll(".diff button").forEach(x => x.setAttribute("aria-pressed", x.dataset.d === diff));
   document.querySelectorAll(".rounds button").forEach(x => x.setAttribute("aria-pressed", +x.dataset.bo === BO));
   $("boOut").textContent = BO_LABEL[BO];
-  $("soundBtn").textContent = "Sonido: " + (soundOn ? "sí" : "no"); $("soundBtn").setAttribute("aria-pressed", soundOn);
+  $("soundBtn").innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor" fill-opacity=".25"/>' + (soundOn ? '<path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/>' : '<path d="M17 9l5 6M22 9l-5 6"/>') + '</svg>';
+  $("soundBtn").setAttribute("aria-pressed", soundOn); $("soundBtn").setAttribute("aria-label", soundOn ? "Quitar sonido" : "Poner sonido");
 }
 $("soundBtn").addEventListener("click", () => { soundOn = !soundOn; syncSettings(); saveCfg(); if (soundOn){ SFX.init(); SFX.place(); } });
 $("sizeIn").addEventListener("input", e => { N = +e.target.value; syncSettings(); resetBoard(P); resetBoard(R); saveCfg(); });
