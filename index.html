@@ -149,6 +149,49 @@ button:focus-visible{outline:3px solid var(--text);outline-offset:2px}
 .play{background:var(--you);padding:14px;font-size:17px;font-family:var(--f-display);font-weight:400;letter-spacing:.03em}
 .play:hover{filter:brightness(1.08)}
 .stack{display:flex;flex-direction:column;gap:12px}
+.rounds{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.rounds button{background:var(--empty);color:var(--text);padding:10px 4px;font-size:14px;border:2px solid transparent}
+.rounds button[aria-pressed="true"]{border-color:var(--you);background:var(--board)}
+
+/* Cuenta atrás entre rondas */
+.count{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);font-family:var(--f-display);font-size:clamp(64px,18vw,120px);line-height:1;color:var(--text);text-shadow:0 6px 0 rgba(0,0,0,.35),0 0 34px rgba(255,138,92,.7);pointer-events:none;z-index:15;white-space:nowrap}
+.count.go{animation:count .7s ease-out}
+@keyframes count{from{transform:translate(-50%,-50%) scale(1.9);opacity:0}30%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+
+/* Pantalla de resultado */
+.overlay{overflow:hidden}
+.overlay[data-look="win"]{background:rgba(38,30,10,.88)}
+.overlay[data-look="lose"]{background:rgba(40,8,20,.9)}
+.result{position:relative;z-index:2;text-align:center;align-items:center;gap:14px}
+.result h2{font-size:clamp(34px,10vw,48px);text-transform:uppercase;letter-spacing:.02em}
+.result .final,.result .series,.result .play,.result .ghostbtn{width:100%}
+.result .ghostbtn{padding:11px}
+.eyebrow{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.badge{width:104px;height:104px;display:grid;place-items:center;border-radius:50%;margin-bottom:-6px}
+.badge svg{width:62px;height:62px}
+.result.win{border:2px solid var(--gold);box-shadow:0 0 0 6px rgba(255,217,61,.12),0 0 70px rgba(255,217,61,.28)}
+.result.win h2,.result.win .badge{color:var(--gold)}
+.result.win .badge{background:radial-gradient(circle,rgba(255,217,61,.4),transparent 70%);animation:badgein .7s cubic-bezier(.3,1.6,.5,1)}
+.result.win .play{background:var(--gold)}
+.result.lose{border:2px solid var(--danger);box-shadow:0 0 60px rgba(255,77,109,.22);animation:sad .5s ease}
+.result.lose h2,.result.lose .badge{color:var(--danger)}
+.result.lose .badge{background:radial-gradient(circle,rgba(255,77,109,.3),transparent 70%)}
+.result.draw h2,.result.draw .badge{color:var(--muted)}
+.result.draw .badge{background:radial-gradient(circle,rgba(163,157,211,.25),transparent 70%)}
+@keyframes badgein{from{transform:scale(0) rotate(-25deg)}}
+@keyframes sad{20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(3px)}}
+.series{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;background:var(--board);border-radius:14px;padding:12px}
+.series .side{display:flex;flex-direction:column;align-items:center;gap:6px}
+.series small{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.series b{font-family:var(--f-display);font-weight:400;font-size:42px;line-height:1;font-variant-numeric:tabular-nums}
+.series .you b{color:var(--you)} .series .foe b{color:var(--rival)}
+.series .dash{font-family:var(--f-display);font-size:28px;color:var(--muted)}
+.pips{display:flex;gap:5px}
+.pips i{width:12px;height:12px;border-radius:3px;background:var(--empty)}
+.series .you .pips i.on{background:var(--you)} .series .foe .pips i.on{background:var(--rival)}
+.confetti{position:absolute;top:-16px;width:8px;height:14px;border-radius:2px;background:var(--c);pointer-events:none;z-index:1;animation:fall var(--t) linear var(--d) forwards}
+@keyframes fall{to{transform:translate(var(--x),1100px) rotate(var(--r))}}
+
 .final{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .final div{background:var(--board);border-radius:12px;padding:12px}
 .final small{display:block;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
@@ -224,6 +267,7 @@ button:focus-visible{outline:3px solid var(--text);outline-offset:2px}
     <div class="tray" id="rival-tray"></div>
   </section>
 
+  <div class="count" id="count" hidden></div>
   <div class="overlay" id="overlay">
     <div class="card" id="startCard">
       <h2>Block blast, pero a muerte</h2>
@@ -247,6 +291,14 @@ button:focus-visible{outline:3px solid var(--text);outline-offset:2px}
         <input type="range" id="atkIn" min="250" max="4000" step="250" value="1000">
         <div class="ticks"><span>250 caótico</span><span>4000 tranquilo</span></div>
       </div>
+      <div class="setting">
+        <label>Rondas <output id="boOut">1 ronda</output></label>
+        <div class="rounds" role="group" aria-label="Rondas">
+          <button type="button" data-bo="1" id="bo-1" aria-pressed="true">Clásica</button>
+          <button type="button" data-bo="3" id="bo-3">Mejor de 3</button>
+          <button type="button" data-bo="5" id="bo-5">Mejor de 5</button>
+        </div>
+      </div>
       <div class="stack" id="botBox">
         <div class="diff" role="group" aria-label="Dificultad">
           <button type="button" data-d="facil" id="d-facil">Fácil</button>
@@ -264,14 +316,19 @@ button:focus-visible{outline:3px solid var(--text);outline-offset:2px}
         </div>
         <div class="code" id="codeShow" hidden></div>
         <button class="joinbtn sharebtn" type="button" id="shareBtn" hidden>Enviar invitación</button>
-        <p class="status" id="netStatus">Crea una sala y pásale el código o el enlace a tu amigo. El tamaño y los puntos los elige quien la crea.</p>
+        <p class="status" id="netStatus">Crea una sala y pásale el código o el enlace a tu amigo. El tamaño, los puntos y las rondas los elige quien la crea.</p>
       </div>
     </div>
-    <div class="card" id="endCard" hidden>
-      <h2 id="endTitle">¡Has ganado!</h2>
+    <div class="card result" id="endCard" hidden>
+      <div class="badge" id="endBadge" aria-hidden="true"></div>
+      <div class="eyebrow" id="endEyebrow">Partida a 1 ronda</div>
+      <h2 id="endTitle">¡Victoria!</h2>
       <p id="endText"></p>
-      <div class="final"><div><small>Tú</small><b id="endYou">0</b></div><div><small>Rival</small><b id="endRival">0</b></div></div>
+      <div class="series" id="endSeries" hidden></div>
+      <div class="final"><div><small>Tus puntos</small><b id="endYou">0</b></div><div><small id="endRivalLbl">Rival</small><b id="endRival">0</b></div></div>
+      <p class="status" id="readyStatus"></p>
       <button class="play" type="button" id="againBtn">Revancha</button>
+      <button class="ghostbtn" type="button" id="menuBtn">Salir al menú</button>
     </div>
   </div>
 </main>
@@ -280,9 +337,9 @@ button:focus-visible{outline:3px solid var(--text);outline-offset:2px}
 <script>
 
 var diffSaved;
-let N = 8, ATK = 1000, soundOn = true;
+let N = 8, ATK = 1000, soundOn = true, BO = 1;
 const CFG_KEY = "duelo-cfg-v2";
-try { const s = JSON.parse(localStorage.getItem(CFG_KEY) || "{}"); if (s.n >= 5 && s.n <= 12) N = s.n; if (s.atk >= 250 && s.atk <= 4000) ATK = s.atk; if (s.diff) diffSaved = s.diff; if (s.sound === false) soundOn = false; } catch (e) {}
+try { const s = JSON.parse(localStorage.getItem(CFG_KEY) || "{}"); if (s.n >= 5 && s.n <= 12) N = s.n; if (s.atk >= 250 && s.atk <= 4000) ATK = s.atk; if (s.diff) diffSaved = s.diff; if (s.sound === false) soundOn = false; if ([1,3,5].includes(s.bo)) BO = s.bo; } catch (e) {}
 
 // ---------- Ajustes de puntuación (estilo Block Blast) ----------
 const PTS_CELL = 10;          // por cada casilla colocada
@@ -677,55 +734,160 @@ function resetBoard(B){
   Object.assign(B, { t:0, b:N-1, l:0, r:N-1, score:0, shown:0, charge:0, combo:0, miss:0 });
   deal(B); render(B);
 }
+// ---------- Rondas ----------
+const S = { bo:1, me:0, foe:0, round:1, hist:[], over:false, readyMe:false, readyFoe:false, endEpoch:0 };
+const need = () => Math.ceil(S.bo / 2);
+const foeName = () => mode === "online" ? "Amigo" : "Rival";
+function newSeries(bo){ Object.assign(S, { bo, me:0, foe:0, round:1, hist:[], over:false }); }
+function updateChip(){
+  const label = mode === "online" ? "Sala " + NET.code.toUpperCase() : DIFF[diff].label;
+  $("diffChip").textContent = S.bo > 1 ? `Ronda ${S.round} · ${S.me}–${S.foe} · ${label}` : `${N}×${N} · ${fmt(ATK)} pts · ${label}`;
+}
+let countTimer = null;
+function stopCountdown(){ clearInterval(countTimer); countTimer = null; $("count").hidden = true; }
+// Empieza una ronda: tableros nuevos y cuenta atrás 3, 2, 1
 function start(){
   resetBoard(P); resetBoard(R);
-  $("overlay").hidden = true; running = true;
-  $("diffChip").textContent = `${N}×${N} · ${fmt(ATK)} pts · ${mode === "online" ? "Sala " + NET.code.toUpperCase() : DIFF[diff].label}`;
-  clearTimeout(botTimer);
-  if (mode === "bot") scheduleBot();
+  $("overlay").hidden = true; $("overlay").dataset.look = ""; clearConfetti();
+  running = false; clearTimeout(botTimer); stopCountdown(); updateChip();
+  const el = $("count"); let n = 3;
+  const tick = () => {
+    el.hidden = false;
+    el.textContent = n > 0 ? n : "¡Ya!";
+    retrigger(el, "go");
+    SFX.tone(n > 0 ? 440 : 880, 0, n > 0 ? .12 : .3, "square", .05);
+    if (n === 0){
+      clearInterval(countTimer); countTimer = null; running = true;
+      if (mode === "bot") scheduleBot();
+      sendState();
+      setTimeout(() => { if (!countTimer) el.hidden = true; }, 650);
+    }
+    n--;
+  };
+  tick(); countTimer = setInterval(tick, 750);
 }
 function end(won, reason){
   if (!running) return;
   running = false; clearTimeout(botTimer);
   if (drag) onUp();
-  won ? SFX.win() : SFX.lose();
   const online = mode === "online";
   if (online && !won) netSend("lost", { epoch: NET.epoch });
-  $("endTitle").textContent = won ? "¡Has ganado!" : "Has perdido";
-  $("endText").textContent = reason === "left" ? "Tu amigo ha salido de la sala."
-    : won ? (online ? "Tu amigo se ha quedado sin sitio para sus piezas." : "Tu rival se ha quedado sin sitio para sus piezas.")
-    : "No te cabe ninguna pieza. Pide la revancha.";
-  $("endRival").previousElementSibling.textContent = online ? "Amigo" : "Rival";
+  S.endEpoch = NET.epoch; S.readyMe = false; S.readyFoe = mode === "bot";
+  if (reason === "left"){ S.over = true; SFX.win(); showResult("left"); return; }
+  if (won) S.me++; else S.foe++;
+  S.hist.push(won ? "w" : "l");
+  S.over = S.me >= need() || S.foe >= need();
+  if (won) (S.over ? SFX.clean() : SFX.win()); else SFX.lose();
+  showResult(won ? "win" : "lose");
+}
+// Los dos os habéis quedado sin sitio a la vez: la ronda no cuenta
+function toDraw(){
+  if (S.hist[S.hist.length - 1] !== "l") return;
+  S.foe--; S.hist[S.hist.length - 1] = "d";
+  S.over = S.me >= need() || S.foe >= need();
+  showResult("draw");
+}
+const BADGE = {
+  win: '<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"><path d="M20 9h24v15a12 12 0 0 1-24 0z" fill="currentColor" fill-opacity=".3"/><path d="M20 14h-8a9 9 0 0 0 9 10M44 14h8a9 9 0 0 1-9 10M32 36v9M24 45h16v9H24zM19 54h26"/></svg>',
+  lose: '<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"><rect x="11" y="11" width="42" height="42" rx="7" fill="currentColor" fill-opacity=".22"/><path d="M31 11l-5 13 10 8-7 9 4 12"/></svg>',
+  draw: '<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"><rect x="7" y="21" width="22" height="22" rx="4" fill="currentColor" fill-opacity=".22"/><rect x="35" y="21" width="22" height="22" rx="4" fill="currentColor" fill-opacity=".22"/></svg>'
+};
+function showResult(kind){
+  const online = mode === "online", card = $("endCard"), ov = $("overlay");
+  const final = S.over, series = S.bo > 1;
+  const look = kind === "left" ? "win" : kind;
+  card.classList.remove("win", "lose", "draw"); void card.offsetWidth; card.classList.add(look);
+  ov.dataset.look = look;
+  $("endBadge").innerHTML = BADGE[look];
+  $("endEyebrow").textContent = !series ? "Partida a 1 ronda" : final ? `Al mejor de ${S.bo} · final` : `Ronda ${S.round} · al mejor de ${S.bo}`;
+  $("endTitle").textContent = kind === "draw" ? "Empate" : kind === "lose" ? (final ? "Derrota" : "Ronda perdida") : (final ? "¡Victoria!" : "¡Ronda tuya!");
+  const foe = online ? "Tu amigo" : "La máquina";
+  const left = need() - S.me;
+  const falta = ` Te ${left === 1 ? "falta 1 ronda" : "faltan " + left + " rondas"} para ganar.`;
+  $("endText").textContent =
+    kind === "left" ? "Tu amigo ha salido de la sala."
+    : kind === "draw" ? "Os habéis quedado sin sitio a la vez. Esta ronda no cuenta."
+    : kind === "win" ? `${foe} se ha quedado sin sitio para sus piezas.` + (final && series ? ` Ganas el duelo ${S.me}–${S.foe}.` : !final ? falta : "")
+    : "No te cabe ninguna pieza." + (final && series ? ` ${foe} gana el duelo ${S.foe}–${S.me}.` : final ? " Pide la revancha." : falta);
+  const sEl = $("endSeries"); sEl.hidden = !series;
+  if (series){
+    const pips = n => Array.from({ length: need() }, (_, i) => `<i class="${i < n ? "on" : ""}"></i>`).join("");
+    sEl.innerHTML = `<div class="side you"><small>Tú</small><b>${S.me}</b><span class="pips">${pips(S.me)}</span></div><div class="dash">–</div><div class="side foe"><small>${foeName()}</small><b>${S.foe}</b><span class="pips">${pips(S.foe)}</span></div>`;
+  }
+  $("endRivalLbl").textContent = "Puntos " + (online ? "amigo" : "rival");
   $("endYou").textContent = fmt(P.score); $("endRival").textContent = fmt(R.score);
-  $("againBtn").hidden = reason === "left";
-  $("startCard").hidden = true; $("endCard").hidden = false; $("overlay").hidden = false;
+  const btn = $("againBtn");
+  btn.hidden = kind === "left";
+  btn.disabled = online && S.readyMe;
+  btn.textContent = online && S.readyMe ? "Esperando a tu amigo…" : final ? "Revancha" : online ? "Estoy listo" : "Siguiente ronda";
+  readyText();
+  $("startCard").hidden = true; card.hidden = false; ov.hidden = false;
+  look === "win" ? confetti() : clearConfetti();
+  updateChip();
+}
+function readyText(){
+  const t = $("readyStatus");
+  if (mode !== "online" || $("againBtn").hidden){ t.textContent = ""; return; }
+  t.textContent = S.readyFoe ? (S.readyMe ? "¡Vamos allá!" : "Tu amigo está listo. Pulsa cuando quieras.")
+    : S.readyMe ? "" : (S.over ? "La revancha empieza cuando los dos pulséis el botón." : "Descansad un momento. La ronda empieza cuando los dos estéis listos.");
+}
+function confetti(){
+  clearConfetti();
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const ov = $("overlay"), cols = [...COLORS, "#ffffff"];
+  for (let i = 0; i < 48; i++){
+    const d = document.createElement("div"); d.className = "confetti";
+    d.style.left = Math.random() * 100 + "%";
+    d.style.setProperty("--c", cols[rnd(cols.length)]);
+    d.style.setProperty("--x", (Math.random() * 160 - 80) + "px");
+    d.style.setProperty("--r", (rnd(900) - 450) + "deg");
+    d.style.setProperty("--t", (1.8 + Math.random() * 1.6) + "s");
+    d.style.setProperty("--d", (Math.random() * .8) + "s");
+    ov.appendChild(d);
+  }
+}
+function clearConfetti(){ document.querySelectorAll(".confetti").forEach(d => d.remove()); }
+function nextRound(){ if (S.over) newSeries(BO); else S.round++; start(); }
+function goMenu(){
+  running = false; clearTimeout(botTimer); stopCountdown(); clearConfetti();
+  if (mode === "online") { leaveRoom(); netMsg("Has salido de la sala."); }
+  $("overlay").dataset.look = "";
+  $("endCard").hidden = true; $("startCard").hidden = false; $("overlay").hidden = false;
 }
 document.querySelectorAll(".diff button").forEach(b => b.addEventListener("click", () => {
   diff = b.dataset.d;
   document.querySelectorAll(".diff button").forEach(x => x.setAttribute("aria-pressed", x === b));
   saveCfg();
 }));
-function saveCfg(){ try { localStorage.setItem(CFG_KEY, JSON.stringify({ n:N, atk:ATK, diff, sound: soundOn })); } catch (e) {} }
+function saveCfg(){ try { localStorage.setItem(CFG_KEY, JSON.stringify({ n:N, atk:ATK, diff, sound: soundOn, bo: BO })); } catch (e) {} }
+const BO_LABEL = { 1: "1 ronda", 3: "Al mejor de 3", 5: "Al mejor de 5" };
+document.querySelectorAll(".rounds button").forEach(b => b.addEventListener("click", () => { BO = +b.dataset.bo; syncSettings(); saveCfg(); }));
 function syncSettings(){
   $("sizeIn").value = N; $("sizeOut").textContent = N + "×" + N;
   $("atkIn").value = ATK; $("atkOut").textContent = fmt(ATK); $("ruleAtk").textContent = fmt(ATK);
   document.querySelectorAll(".diff button").forEach(x => x.setAttribute("aria-pressed", x.dataset.d === diff));
+  document.querySelectorAll(".rounds button").forEach(x => x.setAttribute("aria-pressed", +x.dataset.bo === BO));
+  $("boOut").textContent = BO_LABEL[BO];
   $("soundBtn").textContent = "Sonido: " + (soundOn ? "sí" : "no"); $("soundBtn").setAttribute("aria-pressed", soundOn);
 }
 $("soundBtn").addEventListener("click", () => { soundOn = !soundOn; syncSettings(); saveCfg(); if (soundOn){ SFX.init(); SFX.place(); } });
 $("sizeIn").addEventListener("input", e => { N = +e.target.value; syncSettings(); resetBoard(P); resetBoard(R); saveCfg(); });
 $("atkIn").addEventListener("input", e => { ATK = +e.target.value; syncSettings(); render(P); render(R); saveCfg(); });
-$("playBtn").addEventListener("click", () => { setMode("bot"); start(); });
-$("againBtn").addEventListener("click", () => { if (mode === "online" && NET.conn) sendStart(); else start(); });
-$("restartBtn").addEventListener("click", () => {
-  running = false; clearTimeout(botTimer);
-  if (mode === "online") { leaveRoom(); netMsg("Has salido de la sala."); }
-  $("endCard").hidden = true; $("startCard").hidden = false; $("overlay").hidden = false;
+$("playBtn").addEventListener("click", () => { setMode("bot"); newSeries(BO); start(); });
+$("againBtn").addEventListener("click", () => {
+  if (mode !== "online"){ nextRound(); return; }
+  if (!NET.conn) return;
+  S.readyMe = true;
+  $("againBtn").disabled = true; $("againBtn").textContent = "Esperando a tu amigo…";
+  netSend("ready", { epoch: NET.epoch });
+  readyText(); checkReady();
 });
+$("menuBtn").addEventListener("click", goMenu);
+$("restartBtn").addEventListener("click", goMenu);
 
 // ---------- Modo amigo (conexión directa entre navegadores con PeerJS) ----------
 let mode = "bot";
-const NET = { peer: null, conn: null, host: false, code: "", epoch: 0, helloTimer: null, joinTimer: null };
+const NET = { peer: null, conn: null, host: false, code: "", epoch: 0, helloTimer: null, joinTimer: null, inMatch: false };
 const PREFIX = "duelo-bloques-v2-";
 const CODE_CH = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
 function netMsg(t){ $("netStatus").textContent = t; }
@@ -803,6 +965,7 @@ function bindConn(conn){
       case "state": onState(d); break;
       case "atk": onAtk(d); break;
       case "lost": onLost(d); break;
+      case "ready": onReady(d); break;
       case "full": netMsg("Esa sala ya tiene dos jugadores."); break;
     }
   });
@@ -811,34 +974,47 @@ function bindConn(conn){
 }
 function leaveRoom(){
   clearInterval(NET.helloTimer); clearTimeout(NET.joinTimer);
-  const { conn, peer } = NET; NET.conn = null; NET.peer = null;
+  const { conn, peer } = NET; NET.conn = null; NET.peer = null; NET.inMatch = false;
   if (conn) { try { conn.close(); } catch (e) {} }
   if (peer) { try { peer.destroy(); } catch (e) {} }
   $("codeShow").hidden = true; $("shareBtn").hidden = true; setBusy(false);
 }
 function sayHello(){ netSend("hello", {}); }
-function onHello(){ if (NET.host && !running) sendStart(); }
-function sendStart(){
+function onHello(){ if (NET.host && !NET.inMatch) sendStart(true); }
+// Solo quien crea la sala arranca las rondas; manda el marcador para que los dos vayáis sincronizados
+function sendStart(fresh){
   if (!NET.conn || !NET.conn.open) return;
-  const cfg = { n: N, atk: ATK, epoch: Date.now() };
+  if (fresh || S.over) newSeries(BO); else S.round++;
+  const cfg = { n: N, atk: ATK, epoch: Date.now(), bo: S.bo, round: S.round, hw: S.me, gw: S.foe, hist: S.hist.join("") };
   netSend("start", cfg);
   startOnline(cfg);
 }
 function onStart(d){
   d = d || {};
-  const n = +d.n, atk = +d.atk, epoch = +d.epoch;
+  const n = +d.n, atk = +d.atk, epoch = +d.epoch, bo = +d.bo, round = +d.round, hw = +d.hw, gw = +d.gw;
   if (!(n >= 5 && n <= 12) || !(atk >= 250 && atk <= 4000) || !epoch) return;
+  if (![1,3,5].includes(bo) || !(round >= 1 && round <= 20) || !(hw >= 0 && hw <= 3) || !(gw >= 0 && gw <= 3)) return;
+  if (typeof d.hist !== "string" || !/^[wld]{0,20}$/.test(d.hist)) return;
   if (epoch <= NET.epoch) return;
   clearInterval(NET.helloTimer);
+  // El marcador viene desde el punto de vista de quien creó la sala: se le da la vuelta
+  Object.assign(S, { bo, round, me: gw, foe: hw, hist: [...d.hist].map(x => x === "w" ? "l" : x === "l" ? "w" : "d") });
+  S.over = false;
   startOnline({ n: Math.round(n), atk: Math.round(atk), epoch });
 }
 function startOnline(cfg){
   if (cfg.epoch <= NET.epoch) return;
-  N = cfg.n; ATK = cfg.atk; NET.epoch = cfg.epoch;
+  N = cfg.n; ATK = cfg.atk; NET.epoch = cfg.epoch; NET.inMatch = true;
+  S.readyMe = false; S.readyFoe = false;
   syncSettings(); mode = "online";
   $("endCard").hidden = true; $("startCard").hidden = false;
-  start(); sendState();
+  start();
 }
+function onReady(d){
+  if (mode !== "online" || !d || d.epoch !== NET.epoch) return;
+  S.readyFoe = true; readyText(); checkReady();
+}
+function checkReady(){ if (NET.host && S.readyMe && S.readyFoe && !running && !countTimer) sendStart(false); }
 const ENC = c => c === 0 ? "0" : c === JUNK ? "j" : String(COLORS.indexOf(c) + 1);
 function sendState(){
   if (mode !== "online" || !running) return;
@@ -869,10 +1045,17 @@ function onAtk(d){
   const n = Math.round(+(d && d.n));
   if (n >= 1 && n <= 8) attack(P, n);
 }
-function onLost(d){ if (mode === "online" && d && d.epoch === NET.epoch) end(true); }
+function onLost(d){
+  if (mode !== "online" || !d || d.epoch !== NET.epoch) return;
+  if (running) end(true);
+  else if (S.endEpoch === NET.epoch) toDraw();
+}
 function onFoeLeft(){
-  if (running && mode === "online") end(true, "left");
-  else if (mode === "online") netMsg(NET.host ? "Tu amigo ha salido. La sala sigue abierta con el mismo código." : "La sala se ha cerrado.");
+  if (mode !== "online") return;
+  if (running) end(true, "left");
+  else if (NET.inMatch){ stopCountdown(); S.over = true; S.readyMe = false; showResult("left"); }
+  else netMsg(NET.host ? "Tu amigo ha salido. La sala sigue abierta con el mismo código." : "La sala se ha cerrado.");
+  NET.inMatch = false;
 }
 $("createBtn").addEventListener("click", () => hostRoom());
 $("joinBtn").addEventListener("click", () => {
