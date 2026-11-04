@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#2b47b5">
 <meta name="description" content="Block blast 1 contra 1: cada 100 puntos le quitas una línea al campo de tu rival.">
 <title>Duelo de Bloques</title>
@@ -37,7 +37,6 @@ html{background:var(--bg-bot)}
 body{margin:0;font-size:14px;color:var(--text);font-family:var(--f-body);font-weight:500;
   background-color:var(--bg);
   background-image:radial-gradient(120% 70% at 50% 0%,var(--bg-top) 0%,transparent 70%),linear-gradient(180deg,var(--bg) 0%,var(--bg-bot) 100%);
-  background-attachment:fixed;
   padding-left:max(16px, env(safe-area-inset-left,0px));padding-right:max(16px, env(safe-area-inset-right,0px));padding-top:max(16px, env(safe-area-inset-top,0px));padding-bottom:max(24px, calc(env(safe-area-inset-bottom,0px) + 8px));
   -webkit-user-select:none;user-select:none;overflow-x:hidden}
 
@@ -99,13 +98,13 @@ button:focus-visible{outline:3px solid #fff;outline-offset:2px}
 .boardwrap.shake2{animation:shake2 .5s}
 @keyframes shake{25%{transform:translate(-3px,1px)}50%{transform:translate(3px,-1px)}75%{transform:translate(-2px,0)}}
 @keyframes shake2{15%{transform:translate(-6px,2px) rotate(-.6deg)}30%{transform:translate(6px,-2px) rotate(.6deg)}45%{transform:translate(-5px,1px)}60%{transform:translate(4px,-1px)}80%{transform:translate(-2px,0)}}
-.board{display:grid;grid-template-columns:repeat(var(--n,8),1fr);gap:var(--gap);padding:8px;background:var(--board);border:3px solid var(--board-edge);border-radius:12px;aspect-ratio:1;width:100%;max-width:100%;touch-action:none;
+.board{display:grid;grid-template-columns:repeat(var(--n,8),minmax(0,1fr));grid-template-rows:repeat(var(--n,8),minmax(0,1fr));gap:var(--gap);padding:8px;background:var(--board);border:3px solid var(--board-edge);border-radius:12px;aspect-ratio:1;width:100%;max-width:100%;touch-action:none;
   box-shadow:0 6px 18px rgba(0,0,0,.28)}
 .you-panel .boardwrap{max-width:440px}
 .rival-panel .board{--gap:2px;padding:4px;border-width:2px;border-radius:8px}
 
 /* Casilla vacía, ligeramente hundida */
-.cell{--bw:6px;position:relative;border-radius:3px;background:var(--empty);
+.cell{--bw:6px;position:relative;min-width:0;min-height:0;border-radius:3px;background:var(--empty);
   border:var(--bw) solid transparent;border-width:2px;
   border-top-color:rgba(0,0,0,.22);border-left-color:rgba(0,0,0,.12);border-right-color:rgba(255,255,255,.03);border-bottom-color:rgba(255,255,255,.05)}
 .cell.full,.cell.pv{border-width:var(--bw)}
@@ -113,9 +112,9 @@ button:focus-visible{outline:3px solid #fff;outline-offset:2px}
 .rival-panel .cell.full{border-width:var(--bw);border-radius:1px}
 .cell.dead{background:repeating-linear-gradient(45deg,var(--dead-a) 0 4px,var(--dead-b) 4px 8px);border-color:transparent;opacity:.8}
 .cell.pv{opacity:.45}
-.cell.wc{filter:brightness(1.3);box-shadow:0 0 0 2px rgba(255,255,255,.9);z-index:1}
-.cell.wc.pv{opacity:.8}
-.cell.clr::after{content:"";position:absolute;inset:calc(var(--bw) * -1);border-radius:3px;background:#fff;animation:clr .45s ease forwards}
+/* Línea que se va a borrar: sus bloques se pintan del color de la pieza (como Block Blast), sin cambiar de tamaño */
+.cell.wc.pv{opacity:.85}
+.cell.clr::after{content:"";position:absolute;inset:calc(var(--bw) * -1);border-radius:3px;background:#fff;animation:clr .45s ease var(--dl,0s) both}
 @keyframes clr{from{opacity:1;transform:scale(1.08)}to{opacity:0;transform:scale(.3)}}
 .cell.shrunk::after{content:"";position:absolute;inset:-2px;border-radius:3px;background:var(--danger);animation:hit .7s ease forwards}
 @keyframes hit{0%,40%{opacity:.9}100%{opacity:0}}
@@ -152,7 +151,7 @@ button:focus-visible{outline:3px solid #fff;outline-offset:2px}
 .rival-panel .piece{gap:1px}
 .pc{--bw:3px;width:var(--mc);height:var(--mc)}
 .rival-panel .pc{--bw:1.5px}
-.ghost{position:fixed;left:0;top:0;z-index:50;pointer-events:none;gap:var(--gap);filter:drop-shadow(0 10px 12px rgba(0,0,0,.4))}
+.ghost{position:fixed;left:0;top:0;z-index:50;pointer-events:none;will-change:transform;transform-origin:50% 50%}
 .ghost .pc{--bw:6px}
 
 /* ---------- Menús ---------- */
@@ -179,7 +178,7 @@ button:focus-visible{outline:3px solid #fff;outline-offset:2px}
 .setting input[type=range]:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 3px var(--accent)}
 /* Selectores segmentados: neutros, el elegido en blanco */
 .modes,.diff,.rounds{display:grid;gap:4px;background:rgba(0,0,0,.22);padding:4px;border-radius:14px}
-.modes{grid-template-columns:1fr 1fr}
+.modes{grid-template-columns:repeat(3,1fr)}
 .diff,.rounds{grid-template-columns:repeat(3,1fr)}
 .modes button,.diff button,.rounds button{background:transparent;color:var(--muted);padding:10px 4px;font-size:14px;font-weight:600;border-radius:10px}
 .modes button:hover,.diff button:hover,.rounds button:hover{color:#fff}
@@ -267,6 +266,8 @@ button:focus-visible{outline:3px solid #fff;outline-offset:2px}
 .sheet .closebtn{background:var(--accent);color:var(--ink);padding:13px;font-size:15px;font-weight:800;box-shadow:0 4px 0 var(--accent-d)}
 
 @media (max-width:720px){
+  html,body{overflow:hidden;overscroll-behavior:none}
+  body{position:fixed;inset:0;width:100%;height:100%;-webkit-touch-callout:none}
   .arena{grid-template-columns:1fr;gap:12px}
   .rival-panel{order:-1;display:grid;grid-template-columns:120px minmax(0,1fr);gap:8px 14px;padding:12px}
   .rival-panel .boardwrap{grid-row:1 / span 3;grid-column:1}
@@ -301,6 +302,37 @@ button:focus-visible{outline:3px solid #fff;outline-offset:2px}
   .logo{--ls:10px}
   .hbtns{gap:6px}
 }
+/* El tablero solo se repinta a sí mismo */
+.board{contain:layout paint}
+
+/* ---------- Modo clásico ---------- */
+#you-bestbox{display:none}
+.solo #you-bestbox{display:block}
+.solo #you-fieldbox{display:none}
+.solo .rival-panel{display:none!important}
+.solo .you-panel .meter{display:none}
+.solo .arena{grid-template-columns:minmax(0,460px);justify-content:center}
+.solo .you-panel .boardwrap{max-width:440px}
+.field b.bump2{animation:bump2 .5s ease}
+@media (max-width:720px){
+  .solo{display:flex;flex-direction:column}
+  .solo header{width:100%}
+  .solo .arena{margin:auto 0;width:100%}
+}
+/* Fin de partida: los bloques se apagan fila a fila */
+.board.over .cell.full{filter:grayscale(1) brightness(.7);transition:filter .3s ease var(--dl,0s)}
+
+/* ---------- Tablero limpio: giro, destello, letrero y confeti ---------- */
+.boardwrap.spin{animation:spin .95s cubic-bezier(.45,0,.2,1)}
+@keyframes spin{0%{transform:rotate(0) scale(1)}35%{transform:rotate(200deg) scale(.84)}100%{transform:rotate(360deg) scale(1)}}
+.fx{position:fixed;inset:0;pointer-events:none;z-index:30;overflow:hidden}
+.flash{position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.9),rgba(255,210,60,.35) 40%,transparent 72%);animation:flash .8s ease-out forwards}
+.flash.soft{opacity:.45;animation-duration:.5s}
+@keyframes flash{from{opacity:1}to{opacity:0}}
+.megatxt{position:absolute;transform:translate(-50%,-50%);font-family:var(--f-display);font-weight:800;font-size:clamp(22px,7.4vw,46px);line-height:1;color:var(--gold);text-shadow:0 4px 0 rgba(0,0,0,.35);text-transform:uppercase;white-space:nowrap;text-align:center;animation:mega 1.7s cubic-bezier(.3,1.5,.5,1) forwards}
+.megatxt small{display:block;font-size:.5em;color:#fff;margin-top:6px}
+@keyframes mega{0%{opacity:0;transform:translate(-50%,-50%) scale(.2) rotate(-14deg)}18%{opacity:1;transform:translate(-50%,-50%) scale(1.18) rotate(4deg)}30%{transform:translate(-50%,-50%) scale(1) rotate(0)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-95%) scale(1)}}
+
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition:none!important}}
 </style>
 
@@ -323,7 +355,8 @@ button:focus-visible{outline:3px solid #fff;outline-offset:2px}
   <section class="panel you-panel" aria-label="Tu tablero">
     <div class="stats">
       <div><div class="who">Tú</div><div class="score" id="you-score">0</div></div>
-      <div class="field">Campo<b id="you-field">8×8</b></div>
+      <div class="field" id="you-fieldbox">Campo<b id="you-field">8×8</b></div>
+      <div class="field" id="you-bestbox">Récord<b id="you-best">0</b></div>
     </div>
     <div class="meter"><span>Próximo ataque <em class="combo" id="you-combo"></em></span><div class="bar" id="you-barbox"><i id="you-bar"></i></div></div>
     <div class="boardwrap"><div class="board" id="you-board"></div><div class="toast" id="you-toast"></div></div>
@@ -345,28 +378,33 @@ button:focus-visible{outline:3px solid #fff;outline-offset:2px}
     <div class="confetti-layer" id="confettiLayer"></div>
     <div class="card" id="startCard">
       <div class="brand"><span class="logo" aria-hidden="true"><i></i><i></i><i></i><i></i></span><h2>Duelo de Bloques</h2></div>
-      <p class="lead">Borra líneas para encoger el tablero de tu rival.</p>
+      <p class="lead" id="leadTxt">Borra líneas para encoger el tablero de tu rival.</p>
       <div class="modes" role="group" aria-label="Modo de juego">
         <button type="button" id="m-bot" aria-pressed="true">Máquina</button>
         <button type="button" id="m-online" aria-pressed="false">Amigo</button>
+        <button type="button" id="m-classic" aria-pressed="false">Clásico</button>
       </div>
       <div class="setting">
         <label for="sizeIn">Campo <output id="sizeOut">8×8</output></label>
         <input type="range" id="sizeIn" min="5" max="12" step="1" value="8">
         <div class="ticks"><span>5×5</span><span>12×12</span></div>
       </div>
-      <div class="setting">
+      <div class="setting" id="atkSet">
         <label for="atkIn">Puntos por ataque <output id="atkOut">1000</output></label>
         <input type="range" id="atkIn" min="250" max="4000" step="250" value="1000">
         <div class="ticks"><span>250</span><span>4000</span></div>
       </div>
-      <div class="setting">
+      <div class="setting" id="roundsSet">
         <label>Rondas <output id="boOut">1 ronda</output></label>
         <div class="rounds" role="group" aria-label="Rondas">
           <button type="button" data-bo="1" id="bo-1" aria-pressed="true">1</button>
           <button type="button" data-bo="3" id="bo-3">3</button>
           <button type="button" data-bo="5" id="bo-5">5</button>
         </div>
+      </div>
+      <div class="stack" id="classicBox" hidden>
+        <p class="note">Sin rival: haz todos los puntos que puedas. Tu récord: <b id="bestMenu">0</b></p>
+        <button class="play" type="button" id="classicBtn">Jugar</button>
       </div>
       <div class="stack" id="botBox">
         <div class="setting">
@@ -413,6 +451,7 @@ button:focus-visible{outline:3px solid #fff;outline-offset:2px}
     </div>
   </div>
 </main>
+<div class="fx" id="fx"></div>
 
 <script src="peerjs.min.js"></script>
 <script>
@@ -531,14 +570,61 @@ function canClear(B, s){
   return false;
 }
 
-// Reparto "amable": prueba varias manos y se queda con la que mejor encaja y más líneas permite
+// ---------- Reparto de piezas al estilo Block Blast ----------
+// Se prueban muchas manos y se elige una que (1) se pueda colocar entera en algún orden
+// y (2), casi siempre, deje hacer líneas. Así casi nunca te quedas vendido "por mala suerte".
+function gridOf(B){
+  const g = new Uint8Array(N * N);
+  for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) g[r * N + c] = (B.cells[r][c] || !inA(B, r, c)) ? 1 : 0;
+  return g;
+}
+function gFits(B, g, s, r0, c0){
+  for (const [dr, dc] of s.cells){ const r = r0 + dr, c = c0 + dc; if (r < B.t || r > B.b || c < B.l || c > B.r || g[r * N + c]) return false; }
+  return true;
+}
+function gPlace(B, g, s, r0, c0){
+  const n = g.slice();
+  for (const [dr, dc] of s.cells) n[(r0 + dr) * N + c0 + dc] = 1;
+  const rows = [], cols = [];
+  for (let r = B.t; r <= B.b; r++){ let ok = true; for (let c = B.l; c <= B.r; c++) if (!n[r * N + c]){ ok = false; break; } if (ok) rows.push(r); }
+  for (let c = B.l; c <= B.r; c++){ let ok = true; for (let r = B.t; r <= B.b; r++) if (!n[r * N + c]){ ok = false; break; } if (ok) cols.push(c); }
+  rows.forEach(r => { for (let c = B.l; c <= B.r; c++) n[r * N + c] = 0; });
+  cols.forEach(c => { for (let r = B.t; r <= B.b; r++) n[r * N + c] = 0; });
+  return { g: n, k: rows.length + cols.length };
+}
+// ¿Caben las piezas en algún orden? (con límite de cálculo para no congelar el juego)
+function solvable(B, g, shapes, budget){
+  if (!shapes.length) return true;
+  for (let i = 0; i < shapes.length; i++){
+    const sh = shapes[i], rest = shapes.filter((_, j) => j !== i);
+    for (let r = B.t; r <= B.b - sh.h + 1; r++) for (let c = B.l; c <= B.r - sh.w + 1; c++){
+      if (!gFits(B, g, sh, r, c)) continue;
+      if (--budget.n < 0) return false;
+      if (solvable(B, gPlace(B, g, sh, r, c).g, rest, budget)) return true;
+    }
+  }
+  return false;
+}
+// Máximo de líneas que una pieza puede borrar ahora mismo
+function maxLines(B, g, sh){
+  let m = 0;
+  for (let r = B.t; r <= B.b - sh.h + 1; r++) for (let c = B.l; c <= B.r - sh.w + 1; c++)
+    if (gFits(B, g, sh, r, c)){ const k = gPlace(B, g, sh, r, c).k; if (k > m) m = k; }
+  return m;
+}
 function deal(B){
-  let best = null, bestS = -1;
-  for (let t = 0; t < 10; t++){
+  const g = gridOf(B), t0 = performance.now();
+  // Cuánto ayuda el reparto: en clásico casi siempre te deja hacer puntos
+  const help = Math.random() < (mode === "classic" ? .85 : .65);
+  let best = null, bestS = -Infinity;
+  for (let t = 0; t < 40; t++){
+    if (t >= 4 && performance.now() - t0 > 12) break;
     const set = [0,1,2].map(() => ({ shape: pickShape(), color: COLORS[rnd(COLORS.length)], used:false }));
-    let s = Math.random() * 10;
-    set.forEach(p => { if (anyFit(B, p.shape)) { s += 10; if (canClear(B, p.shape)) s += 7; } });
-    if (s > bestS){ bestS = s; best = set; }
+    let sc = Math.random() * 20;
+    if (solvable(B, g, set.map(p => p.shape), { n: 2500 })) sc += 1000;
+    else set.forEach(p => { if (anyFit(B, p.shape)) sc += 100; });
+    if (help) set.forEach(p => { sc += Math.min(maxLines(B, g, p.shape), 3) * 45; });
+    if (sc > bestS){ bestS = sc; best = set; }
   }
   B.pieces = best; B.fresh = true;
 }
@@ -587,15 +673,19 @@ function renderTray(B){
   const tray = $(B.id + "-tray"); tray.innerHTML = "";
   B.pieces.forEach((p, i) => {
     const s = document.createElement("div");
-    s.className = "slot" + (p.used ? " used" : (!anyFit(B, p.shape) ? " cant" : "")) + (B.fresh ? " fresh" : "");
+    s.className = "slot" + (p.used ? " used" : (!anyFit(B, p.shape) ? " cant" : "")) + (B.fresh ? " fresh" : "") + (B === P && drag && drag.i === i ? " lifting" : "");
     s.dataset.i = i;
     if (!p.used) s.appendChild(pieceEl(p));
     tray.appendChild(s);
   });
   B.fresh = false;
 }
+// Una sola medición para todas las casillas (antes se medía casilla a casilla y daba tirones al soltar)
 function flashCells(B, list, cls){
-  list.forEach(([r,c]) => { const d = B.divs[r][c]; d.classList.remove(cls); void d.offsetWidth; d.classList.add(cls); });
+  if (!list.length) return;
+  list.forEach(([r,c]) => B.divs[r][c].classList.remove(cls));
+  void B.el.offsetWidth;
+  list.forEach(([r,c]) => B.divs[r][c].classList.add(cls));
 }
 function retrigger(el, cls){ el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
 function toast(B, text, style, sub){
@@ -611,20 +701,37 @@ function floatText(B, text, r, c, size){
   [d.style.left, d.style.top] = pos(r, c);
   B.wrap.appendChild(d); setTimeout(() => d.remove(), 950);
 }
-function burst(B, list){
-  if (B !== P || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  const per = list.length > 30 ? 1 : 2;
+const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+function burst(B, list, per){
+  if (B !== P || reduced()) return;
+  per = per || (list.length > 30 ? 1 : 2);
+  if (list.length * per > 140) per = 1;
   list.forEach(([r, c, color]) => {
     for (let j = 0; j < per; j++){
       const d = document.createElement("div"); d.className = "particle";
       [d.style.left, d.style.top] = pos(r, c);
       d.style.setProperty("--c", color || "#fff");
       d.style.setProperty("--dx", (Math.random() * 120 - 60) + "px");
-      d.style.setProperty("--dy", (Math.random() * -110 - 10) + "px");
+      d.style.setProperty("--dy", (Math.random() * -110 - 10) * (per > 2 ? 1.8 : 1) + "px");
       d.style.setProperty("--rot", rnd(360) + "deg");
       B.wrap.appendChild(d); setTimeout(() => d.remove(), 800);
     }
   });
+}
+
+// Tablero limpio: destello, letrero gigante y lluvia de confeti
+function megaFx(B){
+  const fx = $("fx");
+  const f = document.createElement("div"); f.className = "flash"; fx.appendChild(f); setTimeout(() => f.remove(), 850);
+  const r = B.wrap.getBoundingClientRect();
+  const t = document.createElement("div"); t.className = "megatxt";
+  t.innerHTML = "¡Tablero limpio!<small>+" + fmt(PTS_CLEAN) + "</small>";
+  t.style.left = (r.left + r.width / 2) + "px"; t.style.top = (r.top + r.height * .45) + "px";
+  setTimeout(() => { fx.appendChild(t); setTimeout(() => t.remove(), 1750); }, 350);
+  confetti(fx, 70);
+}
+function softFlash(){
+  const f = document.createElement("div"); f.className = "flash soft"; $("fx").appendChild(f); setTimeout(() => f.remove(), 550);
 }
 
 // Coloca una pieza, borra líneas, suma puntos y devuelve cuántos ataques genera
@@ -650,26 +757,34 @@ function place(B, i, r0, c0){
     B.miss++;
     if (B.miss >= COMBO_GRACE){ B.combo = 0; B.miss = 0; }
   }
-  B.score += gained; B.charge += gained;
-  while (B.charge >= ATK && attacks < MAX_ATK_MOVE){ B.charge -= ATK; attacks++; }
-  if (full) attacks += 2;
+  B.score += gained;
+  if (mode !== "classic"){
+    B.charge += gained;
+    while (B.charge >= ATK && attacks < MAX_ATK_MOVE){ B.charge -= ATK; attacks++; }
+    if (full) attacks += 2;
+  }
   if (B.pieces.every(q => q.used)) deal(B);
   render(B);
+  const cr = placed.reduce((a, [r]) => a + r, 0) / placed.length, cc = placed.reduce((a, [, c]) => a + c, 0) / placed.length;
+  // Ola: estallan primero las casillas cercanas a la pieza
+  cleared.forEach(([r, c]) => B.divs[r][c].style.setProperty("--dl", Math.round((Math.abs(r - cr) + Math.abs(c - cc)) * 28) + "ms"));
   flashCells(B, placed.filter(([r,c]) => B.cells[r][c]), "drop");
   flashCells(B, cleared, "clr");
+  if (B === P && mode === "classic") updateBest();
 
   // Efectos
   const sc = $(B.id + "-score");
   retrigger(sc, gained >= 500 ? "bump2" : "bump");
-  const cr = placed.reduce((a, [r]) => a + r, 0) / placed.length, cc = placed.reduce((a, [, c]) => a + c, 0) / placed.length;
   if (k){
     floatText(B, "+" + fmt(gained), cr, cc, gained >= 1000 ? "big" : gained >= 300 ? "mid" : "");
-    burst(B, cleared);
-    if (k >= 2 || B.combo >= 4) retrigger(B.wrap, k >= 3 || full ? "shake2" : "shake");
-    if (full) toast(B, "¡Tablero limpio!", "gold", "+" + fmt(PTS_CLEAN));
+    burst(B, cleared, full ? 3 : 0);
+    if (full){ B.wrap.classList.remove("shake", "shake2"); retrigger(B.wrap, "spin"); }
+    else if (k >= 2 || B.combo >= 4) retrigger(B.wrap, k >= 3 ? "shake2" : "shake");
+    if (full && B === P){ megaFx(B); buzz([40, 30, 40, 30, 90]); }
+    else if (full) toast(B, "¡Tablero limpio!", "gold", "+" + fmt(PTS_CLEAN));
     else if (k >= 2) toast(B, PRAISE[Math.min(k, 5)], k >= 3 ? "gold" : "good", B.combo > 1 ? "Combo ×" + B.combo : "");
     else if (B.combo > 1) toast(B, "Combo ×" + B.combo, B.combo >= 5 ? "gold" : "good");
-    if (B === P){ full ? SFX.clean() : SFX.clear(k, B.combo); buzz(k >= 2 ? [20, 30, 40] : 15); }
+    if (B === P){ full ? SFX.clean() : SFX.clear(k, B.combo); if (!full) buzz(k >= 2 ? [20, 30, 40] : 15); if (!full && (k >= 3 || B.combo >= 5)) softFlash(); }
   } else {
     if (B === P){ floatText(B, "+" + gained, cr, cc); SFX.place(); }
   }
@@ -705,10 +820,10 @@ function attack(T, n){
   }
   render(T);
   flashCells(T, lost, "shrunk");
-  retrigger(T.wrap, "shake2");
+  if (!(T === P && drag)) retrigger(T.wrap, "shake2");
   toast(T, n > 1 ? `−${n} líneas` : "−1 línea");
   if (T === P){ SFX.hit(); buzz([60, 40, 60]); }
-  if (T === P && drag) updatePreview();
+  if (T === P && drag){ drag.key = null; updatePreview(true); }
   if (T === P) sendState();
   if (!canMove(T)) end(T === R);
 }
@@ -749,68 +864,128 @@ function scheduleBot(){
   const d = DIFF[diff]; botTimer = setTimeout(botStep, d.min + Math.random() * (d.max - d.min));
 }
 
-// ---------- Arrastrar piezas ----------
+// ---------- Arrastrar piezas (al estilo Block Blast) ----------
+// La pieza sigue al dedo un poco por encima de él, el tablero se mide una sola vez al cogerla,
+// solo se repinta una vez por fotograma y, si no encaja justo, se "imanta" al hueco válido más cercano.
 let drag = null;
-function pitch(){ return P.divs[0][1].getBoundingClientRect().left - P.divs[0][0].getBoundingClientRect().left; }
-function clearPreview(){
-  for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) P.divs[r][c].classList.remove("pv","wc");
+const SNAP = 0.85;      // hasta qué distancia (en casillas) se imanta a un hueco válido
+const STICKY = 0.12;    // preferencia por quedarse en el hueco anterior (evita que parpadee entre dos)
+const trayEl = $("you-tray");
+function measure(){
+  const a = P.divs[0][0].getBoundingClientRect(), b = P.divs[0][1].getBoundingClientRect();
+  drag.ox = a.left; drag.oy = a.top; drag.pt = b.left - a.left; drag.cs = a.width;
 }
-function updatePreview(){
-  clearPreview();
-  if (!drag || !drag.last) return;
-  const { p, pt } = drag, [x, y] = drag.last;
-  const o = P.divs[0][0].getBoundingClientRect();
-  const c0 = Math.round((x - o.left) / pt), r0 = Math.round((y - o.top) / pt);
-  drag.pos = null;
-  if (p.used || !fits(P, p.shape, r0, c0)) return;
-  drag.pos = [r0, c0];
-  p.shape.cells.forEach(([dr,dc]) => { const d = P.divs[r0+dr][c0+dc]; d.classList.add("pv"); d.style.setProperty("--c", p.color); });
+function snap(p, fx, fy, prev){
+  let best = null, bd = SNAP * SNAP;
+  const r1 = Math.floor(fy), c1 = Math.floor(fx);
+  for (let r = r1 - 1; r <= r1 + 2; r++) for (let c = c1 - 1; c <= c1 + 2; c++){
+    if (!fits(P, p.shape, r, c)) continue;
+    let d = (r - fy) ** 2 + (c - fx) ** 2;
+    if (prev && prev[0] === r && prev[1] === c) d -= STICKY;
+    if (d < bd){ bd = d; best = [r, c]; }
+  }
+  return best;
+}
+function paintPreview(pos){
+  drag.marked.forEach(([r, c]) => {
+    const d = P.divs[r][c]; d.classList.remove("pv", "wc");
+    const v = P.cells[r][c]; if (v) d.style.setProperty("--c", v);
+  });
+  drag.marked = [];
+  if (!pos) return;
+  const p = drag.p, [r0, c0] = pos;
+  const mark = (r, c, cls) => { const d = P.divs[r][c]; d.classList.add(cls); d.style.setProperty("--c", p.color); drag.marked.push([r, c]); };
+  p.shape.cells.forEach(([dr, dc]) => mark(r0 + dr, c0 + dc, "pv"));
   const { rows, cols } = completions(P, p.shape, r0, c0);
-  rows.forEach(r => { for (let c = P.l; c <= P.r; c++) P.divs[r][c].classList.add("wc"); });
-  cols.forEach(c => { for (let r = P.t; r <= P.b; r++) P.divs[r][c].classList.add("wc"); });
+  rows.forEach(r => { for (let c = P.l; c <= P.r; c++) mark(r, c, "wc"); });
+  cols.forEach(c => { for (let r = P.t; r <= P.b; r++) mark(r, c, "wc"); });
 }
-function onMove(e){
-  if (!drag) return;
-  const { p, pt, ghost } = drag;
+function updatePreview(force){
+  if (!drag || drag.gx == null) return;
+  const fx = (drag.gx - drag.ox) / drag.pt, fy = (drag.gy - drag.oy) / drag.pt;
+  const pos = running && !drag.p.used ? snap(drag.p, fx, fy, drag.pos) : null;
+  const key = pos ? pos[0] + "," + pos[1] : "";
+  if (!force && key === drag.key) return;
+  drag.key = key; drag.pos = pos; paintPreview(pos);
+}
+// Al cogerla, la pieza sale justo de donde estaba en la bandeja (bajo tu dedo), con su tamaño pequeño,
+// y en un instante crece y se eleva por encima del dedo para que la veas. Nunca "cae" desde arriba.
+const GRAB_MS = 140;
+const GAIN = 1;      // la pieza se mueve exactamente igual que el dedo
+function frame(){
+  if (!drag) return false;
+  const { p, pt } = drag;
   const w = p.shape.w * pt, h = p.shape.h * pt;
-  const lift = drag.touch ? h / 2 + pt * 1.4 : 0;
-  const x = e.clientX - w / 2, y = e.clientY - h / 2 - lift;
-  ghost.style.transform = `translate(${x}px, ${y}px)`;
-  drag.last = [x, y];
+  const k = Math.min(1, (performance.now() - drag.t0) / GRAB_MS), e = 1 - Math.pow(1 - k, 3);
+  const lift = (drag.touch ? h / 2 + pt * 1.4 : 0) * e;
+  // Desfase inicial (centro de la pieza en la bandeja respecto al dedo) que se reduce a cero
+  const dx = drag.sx * (1 - e), dy = drag.sy * (1 - e);
+  const sc = drag.from + (1 - drag.from) * e;
+  const x = drag.px - w / 2 + dx, y = drag.py - h / 2 - lift + dy;
+  drag.ghost.style.transform = `translate3d(${x}px, ${y}px, 0) scale(${sc})`;
+  drag.gx = x; drag.gy = y;
   updatePreview();
+  return k < 1;
 }
-function onUp(){
-  if (!drag) return;
-  const d = drag; drag = null;
-  window.removeEventListener("pointermove", onMove);
-  d.ghost.remove(); clearPreview();
-  d.slot.classList.remove("lifting");
-  if (d.pos && running && !d.p.used){
+// Solo hace falta un bucle mientras dura la animación de cogerla
+function tick(){ if (!drag) return; drag.raf = 0; if (frame()) drag.raf = requestAnimationFrame(tick); }
+function endDrag(drop){
+  const d = drag; if (!d) return;
+  if (d.raf) cancelAnimationFrame(d.raf);
+  frame();
+  paintPreview(null);
+  drag = null;
+  d.ghost.remove();
+  try { trayEl.releasePointerCapture(d.id); } catch (e) {}
+  const s = trayEl.querySelector(`.slot[data-i="${d.i}"]`); if (s) s.classList.remove("lifting");
+  if (drop && d.pos && running && !d.p.used){
     place(P, d.i, d.pos[0], d.pos[1]);
     if (running && !canMove(P)) end(false);
   }
 }
-$("you-tray").addEventListener("pointerdown", e => {
+trayEl.addEventListener("pointerdown", e => {
+  if (drag) endDrag(false);      // si se quedó una pieza "enganchada", se suelta y se coge la nueva a la primera
   const slot = e.target.closest(".slot");
-  if (!slot || !running || drag) return;
+  if (!slot || !running) return;
   const i = +slot.dataset.i, p = P.pieces[i];
   if (!p || p.used) return;
   e.preventDefault();
-  const pt = pitch();
-  const gap = parseFloat(getComputedStyle(P.el).gap) || 4;
+  try { trayEl.setPointerCapture(e.pointerId); } catch (err) {}
+  P.wrap.classList.remove("shake", "shake2", "spin");   // medir el tablero quieto
+  drag = { i, p, id: e.pointerId, touch: e.pointerType !== "mouse", marked: [], key: null, pos: null, raf: 0, px: e.clientX, py: e.clientY, x0: e.clientX, y0: e.clientY };
+  measure();
   const ghost = pieceEl(p, "ghost");
-  ghost.style.setProperty("--mc", (pt - gap) + "px");
+  ghost.style.setProperty("--mc", drag.cs + "px");
+  ghost.style.gap = (drag.pt - drag.cs) + "px";
+  const mc = parseFloat(getComputedStyle(slot).getPropertyValue("--mc")) || 20;
+  drag.from = Math.min(1, mc / drag.cs);
+  const pr = slot.querySelector(".piece").getBoundingClientRect();
+  drag.sx = pr.left + pr.width / 2 - e.clientX; drag.sy = pr.top + pr.height / 2 - e.clientY;
+  drag.t0 = performance.now();
   document.body.appendChild(ghost);
-  drag = { i, p, pt, ghost, slot, touch: e.pointerType !== "mouse", pos:null, last:null };
+  drag.ghost = ghost;
   slot.classList.add("lifting");
-  onMove(e);
-  window.addEventListener("pointermove", onMove);
-  window.addEventListener("pointerup", onUp, { once:true });
-  window.addEventListener("pointercancel", onUp, { once:true });
+  if (frame()) drag.raf = requestAnimationFrame(tick);
 });
+trayEl.addEventListener("pointermove", e => {
+  if (!drag || e.pointerId !== drag.id) return;
+  // Se mueve en el mismo instante del evento (esperar al siguiente fotograma añadía retraso)
+  const gain = drag.touch ? GAIN : 1;
+  drag.px = drag.x0 + (e.clientX - drag.x0) * gain; drag.py = drag.y0 + (e.clientY - drag.y0) * gain;
+  frame();
+});
+trayEl.addEventListener("pointerup", e => { if (drag && e.pointerId === drag.id) endDrag(true); });
+trayEl.addEventListener("pointercancel", e => { if (drag && e.pointerId === drag.id) endDrag(false); });
+trayEl.addEventListener("lostpointercapture", e => { if (drag && e.pointerId === drag.id) endDrag(false); });
+window.addEventListener("resize", () => { if (drag){ measure(); updatePreview(true); } });
+// En el móvil la página no se mueve con el dedo (los menús sí se pueden desplazar)
+document.addEventListener("touchmove", e => {
+  if (!e.target.closest || !e.target.closest(".overlay, .sheet")) e.preventDefault();
+}, { passive: false });
 
 // ---------- Partida ----------
 function resetBoard(B){
+  B.el.classList.remove("over");
   buildGrid(B);
   Object.assign(B, { t:0, b:N-1, l:0, r:N-1, score:0, shown:0, charge:0, combo:0, miss:0 });
   deal(B); render(B);
@@ -820,7 +995,47 @@ const S = { bo:1, me:0, foe:0, round:1, hist:[], over:false, readyMe:false, read
 const need = () => Math.ceil(S.bo / 2);
 const foeName = () => mode === "online" ? "Amigo" : "Rival";
 function newSeries(bo){ Object.assign(S, { bo, me:0, foe:0, round:1, hist:[], over:false }); }
+// Récord del modo clásico
+const BEST_KEY = "duelo-best";
+let best = 0, classicTimer = null;
+try { best = Math.max(0, +localStorage.getItem(BEST_KEY) || 0); } catch (e) {}
+function updateBest(){
+  if (mode === "classic" && P.score > best){
+    best = P.score;
+    try { localStorage.setItem(BEST_KEY, best); } catch (e) {}
+    retrigger($("you-best"), "bump2");
+    if (!P.recFx && P.startBest > 0){ P.recFx = true; setTimeout(() => { if (running) toast(P, "¡Nuevo récord!", "gold"); }, 700); }
+  }
+  $("you-best").textContent = fmt(best); $("bestMenu").textContent = fmt(best);
+  if (mode === "classic") updateChip();
+}
+function classicOver(){
+  const rec = P.score > P.startBest && P.score > 0;
+  rec ? SFX.win() : SFX.lose();
+  for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) P.divs[r][c].style.setProperty("--dl", (r * 55 + c * 10) + "ms");
+  P.el.classList.add("over");
+  clearTimeout(classicTimer);
+  classicTimer = setTimeout(() => showClassic(rec), 1150);
+}
+function showClassic(rec){
+  const card = $("endCard"), ov = $("overlay"), look = rec ? "win" : "draw";
+  card.classList.remove("win", "lose", "draw"); void card.offsetWidth; card.classList.add(look);
+  ov.dataset.look = look;
+  $("endBadge").innerHTML = BADGE[look];
+  $("endEyebrow").textContent = "Modo clásico";
+  $("endTitle").textContent = rec ? "¡Nuevo récord!" : "Fin de la partida";
+  $("endText").textContent = rec ? "Has superado tu mejor puntuación." : "No te cabe ninguna pieza más.";
+  $("endSeries").hidden = true;
+  $("endRivalLbl").textContent = "Récord";
+  $("endYou").textContent = fmt(P.score); $("endRival").textContent = fmt(best);
+  const btn = $("againBtn"); btn.hidden = false; btn.disabled = false; btn.textContent = "Otra partida";
+  $("readyStatus").textContent = "";
+  $("startCard").hidden = true; card.hidden = false; ov.hidden = false;
+  rec ? confetti() : clearConfetti();
+  updateChip();
+}
 function updateChip(){
+  if (mode === "classic"){ $("diffChip").textContent = `Clásico · ${N}×${N} · Récord ${fmt(best)}`; return; }
   const label = mode === "online" ? "Sala " + NET.code.toUpperCase() : DIFF[diff].label;
   $("diffChip").textContent = S.bo > 1 ? `Ronda ${S.round} · ${S.me}–${S.foe} · ${label}` : `${N}×${N} · ${fmt(ATK)} pts · ${label}`;
 }
@@ -830,7 +1045,10 @@ function stopCountdown(){ clearInterval(countTimer); countTimer = null; $("count
 function start(){
   resetBoard(P); resetBoard(R);
   $("overlay").hidden = true; $("overlay").dataset.look = ""; clearConfetti();
-  running = false; clearTimeout(botTimer); stopCountdown(); updateChip();
+  running = false; clearTimeout(botTimer); clearTimeout(classicTimer); stopCountdown(); updateChip();
+  fitBoard();
+  // Clásico: sin cuenta atrás, se juega al momento
+  if (mode === "classic"){ running = true; P.startBest = best; P.recFx = false; updateBest(); return; }
   const el = $("count"); let n = 3;
   const tick = () => {
     el.hidden = false;
@@ -850,7 +1068,8 @@ function start(){
 function end(won, reason){
   if (!running) return;
   running = false; clearTimeout(botTimer);
-  if (drag) onUp();
+  if (drag) endDrag(false);
+  if (mode === "classic"){ classicOver(); return; }
   const online = mode === "online";
   if (online && !won) netSend("lost", { epoch: NET.epoch });
   S.endEpoch = NET.epoch; S.readyMe = false; S.readyFoe = mode === "bot";
@@ -912,11 +1131,11 @@ function readyText(){
   t.textContent = S.readyFoe ? (S.readyMe ? "¡Vamos allá!" : "Tu amigo está listo. Pulsa cuando quieras.")
     : S.readyMe ? "" : (S.over ? "La revancha empieza cuando los dos pulséis el botón." : "Descansad un momento. La ronda empieza cuando los dos estéis listos.");
 }
-function confetti(){
-  clearConfetti();
-  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  const ov = $("confettiLayer"), cols = [...COLORS, "#ffffff"];
-  for (let i = 0; i < 48; i++){
+function confetti(layer, count){
+  if (!layer) clearConfetti();
+  if (reduced()) return;
+  const ov = layer || $("confettiLayer"), cols = [...COLORS, "#ffffff"];
+  for (let i = 0; i < (count || 48); i++){
     const d = document.createElement("div"); d.className = "confetti";
     d.style.left = Math.random() * 100 + "%";
     d.style.setProperty("--c", cols[rnd(cols.length)]);
@@ -925,12 +1144,13 @@ function confetti(){
     d.style.setProperty("--t", (1.8 + Math.random() * 1.6) + "s");
     d.style.setProperty("--d", (Math.random() * .8) + "s");
     ov.appendChild(d);
+    if (layer) setTimeout(() => d.remove(), 4500);
   }
 }
 function clearConfetti(){ document.querySelectorAll(".confetti").forEach(d => d.remove()); }
-function nextRound(){ if (S.over) newSeries(BO); else S.round++; start(); }
+function nextRound(){ if (mode === "classic"){ start(); return; } if (S.over) newSeries(BO); else S.round++; start(); }
 function goMenu(){
-  running = false; clearTimeout(botTimer); stopCountdown(); clearConfetti();
+  running = false; clearTimeout(botTimer); clearTimeout(classicTimer); stopCountdown(); clearConfetti();
   if (mode === "online") { leaveRoom(); netMsg("Has salido de la sala."); }
   $("overlay").dataset.look = "";
   $("endCard").hidden = true; $("startCard").hidden = false; $("overlay").hidden = false;
@@ -956,6 +1176,7 @@ $("soundBtn").addEventListener("click", () => { soundOn = !soundOn; syncSettings
 $("sizeIn").addEventListener("input", e => { N = +e.target.value; syncSettings(); resetBoard(P); resetBoard(R); saveCfg(); });
 $("atkIn").addEventListener("input", e => { ATK = +e.target.value; syncSettings(); render(P); render(R); saveCfg(); });
 $("playBtn").addEventListener("click", () => { setMode("bot"); newSeries(BO); start(); });
+$("classicBtn").addEventListener("click", () => { setMode("classic"); newSeries(1); start(); });
 $("againBtn").addEventListener("click", () => {
   if (mode !== "online"){ nextRound(); return; }
   if (!NET.conn) return;
@@ -976,12 +1197,17 @@ function netMsg(t){ $("netStatus").textContent = t; }
 function setMode(m){
   if (m !== mode && mode === "online") leaveRoom();
   mode = m;
-  $("m-bot").setAttribute("aria-pressed", m === "bot"); $("m-online").setAttribute("aria-pressed", m === "online");
-  $("botBox").hidden = m !== "bot"; $("onlineBox").hidden = m !== "online";
+  ["bot", "online", "classic"].forEach(k => $("m-" + k).setAttribute("aria-pressed", m === k));
+  $("botBox").hidden = m !== "bot"; $("onlineBox").hidden = m !== "online"; $("classicBox").hidden = m !== "classic";
+  $("atkSet").hidden = $("roundsSet").hidden = m === "classic";
+  document.body.classList.toggle("solo", m === "classic");
+  $("leadTxt").textContent = m === "classic" ? "Haz líneas, encadena combos y bate tu récord." : "Borra líneas para encoger el tablero de tu rival.";
+  updateBest(); fitBoard();
   $("rival-name").textContent = m === "online" ? "Amigo" : "Rival";
 }
 $("m-bot").addEventListener("click", () => setMode("bot"));
 $("m-online").addEventListener("click", () => setMode("online"));
+$("m-classic").addEventListener("click", () => setMode("classic"));
 function setBusy(b){ $("createBtn").disabled = b; $("joinBtn").disabled = b; }
 function netSend(type, data){ if (NET.conn && NET.conn.open) { try { NET.conn.send({ type, data }); } catch (e) {} } }
 const newCode = () => Array.from({ length: 4 }, () => CODE_CH[rnd(CODE_CH.length)]).join("");
@@ -1160,8 +1386,26 @@ window.addEventListener("pagehide", leaveRoom);
   }
 })();
 
+// El tablero se ajusta para que todo quepa en la pantalla del móvil sin desplazarse
+function fitBoard(){
+  const wrap = P.wrap;
+  wrap.style.maxWidth = "";
+  if (innerWidth > 720) return;
+  const trayBottom = $("you-tray").getBoundingClientRect().bottom;
+  const pad = parseFloat(getComputedStyle(document.body).paddingBottom) || 0;
+  const over = trayBottom + pad - innerHeight;
+  if (over > 0) wrap.style.maxWidth = Math.max(200, wrap.getBoundingClientRect().width - over - 2) + "px";
+}
+let fitTimer = 0;
+const refit = () => { clearTimeout(fitTimer); fitTimer = setTimeout(() => { if (!drag) fitBoard(); }, 60); };
+addEventListener("resize", refit);
+addEventListener("orientationchange", refit);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitBoard);
+
 syncSettings();
 resetBoard(P); resetBoard(R);
+updateBest();
+fitBoard();
 </script>
 
 <div class="sheet" id="iosSheet" hidden>
