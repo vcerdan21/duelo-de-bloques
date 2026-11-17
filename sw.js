@@ -1,7 +1,7 @@
 // Service worker: guarda el juego en el dispositivo para que abra como app y funcione sin conexión
 // (contra la máquina y modo clásico; el modo amigo sí necesita internet).
 // Sube el número de versión cada vez que cambies archivos para forzar la actualización.
-const CACHE = 'duelo-v9';
+const CACHE = 'duelo-v10';
 const FILES = [
   './',
   './index.html',
