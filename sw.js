@@ -1,17 +1,17 @@
 // Service worker: guarda el juego en el dispositivo para que abra como app y funcione sin conexión
 // (contra la máquina y modo clásico; el modo amigo sí necesita internet).
 // Sube el número de versión cada vez que cambies archivos para forzar la actualización.
-const CACHE = 'duelo-v10';
+const CACHE = 'duelo-v11';
 const FILES = [
   './',
   './index.html',
   './manifest.webmanifest',
   './fonts/rubik.woff2',
   './icons/logo.png',
-  './icons/icon-192.png',
-  './icons/icon-512.png',
-  './icons/icon-maskable-512.png',
-  './icons/apple-touch-icon.png'
+  './icons/icon-192-v2.png',
+  './icons/icon-512-v2.png',
+  './icons/icon-maskable-512-v2.png',
+  './icons/apple-touch-icon-v2.png'
 ];
 
 self.addEventListener('install', e => {
